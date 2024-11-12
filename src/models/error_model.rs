@@ -16,8 +16,14 @@ pub enum ApiErrorType {
     #[display(fmt = "User not found for the given ID")]
     UserNotFound,
 
+    #[display(fmt = "Task not found for the given ID")]
+    TaskNotFound,
+
     #[display(fmt = "Authentication error.")]
     AuthenticationError,
+
+    #[display(fmt = "Aggregator Error")]
+    AggregatorError,
 
     // Figure out a way to use this when JWT does not have authorization.
     #[display(fmt = "Authorization error.")]
@@ -61,9 +67,11 @@ impl ApiErrorType {
                 "Bad request. Missing parameter or wrong payload.".to_owned()
             }
             ApiErrorType::UserNotFound => "User not found for given ID".to_owned(),
+            ApiErrorType::TaskNotFound => "Task not found for given ID".to_owned(),
             ApiErrorType::AuthenticationError => {
                 "User not authenticated. Please reauthenticate and try again.".to_owned()
             }
+            ApiErrorType::AggregatorError => {"MongoDB Aggregator Pipeline Error, Could'nt aggregate users-tasks".to_owned()}
             ApiErrorType::AuthorizationError => {
                 "User not authorized to access this resource.".to_owned()
             }
@@ -75,18 +83,19 @@ impl ApiErrorType {
     }
 }
 
-// Global error handling with actix-web ResponseError.
 impl ResponseError for ApiErrorType {
-    // Global error handler status code.
     fn status_code(&self) -> StatusCode {
         match *self {
             ApiErrorType::InternalServerError => StatusCode::INTERNAL_SERVER_ERROR,
             ApiErrorType::BadRequest => StatusCode::BAD_REQUEST,
             ApiErrorType::UserNotFound => StatusCode::NOT_FOUND,
+            ApiErrorType::TaskNotFound => StatusCode::NOT_FOUND,
             ApiErrorType::AuthenticationError => StatusCode::UNAUTHORIZED,
             ApiErrorType::AuthorizationError => StatusCode::FORBIDDEN,
+            ApiErrorType::AggregatorError => StatusCode:: INTERNAL_SERVER_ERROR,
             ApiErrorType::ValidationError { .. } => StatusCode::UNPROCESSABLE_ENTITY,
             ApiErrorType::InvalidCredential => StatusCode::UNAUTHORIZED,
+            ApiErrorType::AggregatorError => todo!(),
         }
     }
 
